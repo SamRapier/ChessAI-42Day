@@ -31,6 +31,9 @@ class Piece():
         if self.firstMove:
             self.firstMove = False
 
+    def findLegalMoves(self, gameState):
+        return False
+
     def findVertical(self, dist, gameState):
         """ finds the legal vertical moves
             - dist is the maximum distance vertical the piece can move, if negative there is no maximum
@@ -297,4 +300,21 @@ class Pawn(Piece):
         # TODO: pawn can attack diagonally, not currently correct
         self.findDiagonal(1, gameState)
 
-# TODO: Knight piece
+
+class Knight(Piece):
+    """ Class for the Knight piece, checks for any legal knight moves
+    """
+
+    def findLegalMoves(self, gameState):
+        """ Adds any legal moves to the legal move list
+            - Takes the gameState as input
+        """
+        x,y = self.position
+
+        # loops through the possible positions that a knight can move
+        for i in [1, -1]:
+            for j in [2, -2]:
+                self.checkLegality(x+i, y+j, gameState)
+                self.checkLegality(x+j, y+i, gameState)
+        
+            
