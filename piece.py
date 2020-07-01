@@ -6,12 +6,16 @@ class Piece():
         - Has functions to find legal moves vertically, horizontally, diagonally
     """
 
-    def __init__(self, x, y):
+    def __init__(self, x, y, colour):
         """Initialises the position of the piece and the legal moves list"""
         self.position = (x, y)
         self.legalMoves = []
         self.firstMove = True
         self.directionLock = False
+        if (colour == "W"):
+            self.direction = 1
+        else:
+            self.direction = -1
 
     def move(self, x, y, gameState):
         """ Boilerplate code for a move
@@ -34,10 +38,9 @@ class Piece():
     def findLegalMoves(self, gameState):
         return False
 
-    def findVertical(self, dist, gameState):
-        """ finds the legal vertical moves
-            - dist is the maximum distance vertical the piece can move, if negative there is no maximum
-            - gameState holds the position of all the other pieces
+    def minMaxPos(self, dist, axis):
+        """ finds the min and max positions
+            - axis is the x or y axis, 0 is x, 1 is y
         """
         # gets the position so it can be manipulated in for the logic 
         # without changing the actual position
@@ -50,21 +53,41 @@ class Piece():
         else:
             # bounds check
             # set the maximum to the distance plus the current position
-            max_pos = y + dist
-            min_pos = y - dist
+            if axis == 0:
+                max_pos = x + dist
+                min_pos = x - dist
+            else:
+                max_pos = y + dist
+                min_pos = y - dist
 
             if max_pos > 7:
-                max_pos = 7
+                max_pos = 7 
 
             if min_pos < 0:
-                min_pos = 0            
+                min_pos = 0 
 
+        if self.direction > 0:
+            return min_pos, max_pos
+        else:
+            return max_pos, min_pos
+    
+
+    def findVertical(self, dist, gameState):
+        """ finds the legal vertical moves
+            - dist is the maximum distance vertical the piece can move, if negative there is no maximum
+            - gameState holds the position of all the other pieces
+        """
+        # gets the position so it can be manipulated in for the logic 
+        # without changing the actual position
+        x, y = self.position
+
+        min_pos, max_pos = minMaxPos(dist, 1)   
 
         # move up the board
         tmp_y = y
         # add each position to legal moves 
         while (tmp_y < max_pos):
-            tmp_y += 1
+            tmp_y += 1 * self.direction
 
             if not self.checkLegality(x, tmp_y, gameState):
                 break
@@ -74,7 +97,7 @@ class Piece():
             # move down the board
             tmp_y = y
             while (tmp_y > min_pos):
-                tmp_y += 1
+                tmp_y -= 1 * self.direction
 
                 if not self.checkLegality(x, tmp_y, gameState):
                     break
@@ -90,25 +113,13 @@ class Piece():
         x,y = self.position
 
         # sets the maximum & minimum position that the piece can move
-        if dist < 0:
-            max_pos = 7
-            min_pos = 0
-        else:
-            # bounds check
-            max_pos = x + dist
-            min_pos = x - dist
-
-            if max_pos > 7:
-                max_pos = 7
-
-            if min_pos < 0:
-                min_pos = 0
+        min_pos, max_pos = minMaxPos(dist, 0)   
 
     
         # test right moves
         tmp_x = x
         while(tmp_x < max_pos):
-            tmp_x += 1
+            tmp_x += 1 * self.direction
 
             if not self.checkLegality(tmp_x, y, gameState):
                 break
@@ -116,7 +127,7 @@ class Piece():
         # test left moves
         tmp_x = x
         while (tmp_x > min_pos):
-            tmp_x -= 1
+            tmp_x -= 1  * self.direction
 
             if not self.checkLegality(tmp_x, y, gameState):
                 break
@@ -131,34 +142,16 @@ class Piece():
         x,y = self.position
 
         # sets the maximum & minimum position that the piece can move
-        if dist < 0:
-            max_pos_x, max_pos_y = 7
-            min_pos_x, min_pos_y = 0
-        else:
-            max_pos_x = x + dist
-            min_pos_x = x - dist
-            max_pos_y = y + dist
-            min_pos_y = y - dist
-            
-            # bounds check
-            if max_pos_x > 7:
-                max_pos_x = 7
+        min_pos_x, max_pos_x = minMaxPos(dist, 0)
+        min_pos_y, max_pos_y = minMaxPos(dist, 1)
 
-            if max_pos_y > 7:
-                max_pos_y = 7
-
-            if min_pos_x < 0:
-                min_pos_x = 0
-
-            if min_pos_y < 0:
-                min_pos_y = 0
 
         # diagonal, up-right
         tmp_y = y
         tmp_x = x
         while (tmp_x < max_pos_x and tmp_y < max_pos_y):
-            tmp_x += 1
-            tmp_y += 1
+            tmp_x += 1 * self.direction
+            tmp_y += 1 * self.direction
 
             if not self.checkLegality(self, tmp_x, tmp_y, gameState):
                 break
@@ -167,8 +160,8 @@ class Piece():
         tmp_y = y
         tmp_x = x         
         while (tmp_x > min_pos_x and tmp_y < max_pos_y):
-            tmp_x -= 1
-            tmp_y += 1
+            tmp_x -= 1 * self.direction
+            tmp_y += 1 * self.direction
 
             if not self.checkLegality(self, tmp_x, tmp_y, gameState):
                 break
@@ -180,8 +173,8 @@ class Piece():
             tmp_y = y
             tmp_x = x         
             while (tmp_x > min_pos_x and tmp_y > min_pos_y):
-                tmp_x -= 1
-                tmp_y -= 1
+                tmp_x -= 1 * self.direction
+                tmp_y -= 1 * self.direction
 
                 if not self.checkLegality(self, tmp_x, tmp_y, gameState):
                     break
@@ -191,8 +184,8 @@ class Piece():
             tmp_y = y
             tmp_x = x         
             while (tmp_x < max_pos_x and tmp_y > min_pos_y):
-                tmp_x += 1
-                tmp_y -= 1
+                tmp_x += 1 * self.direction
+                tmp_y -= 1 * self.direction
 
                 if not self.checkLegality(self, tmp_x, tmp_y, gameState):
                     break
@@ -277,8 +270,8 @@ class Pawn(Piece):
     """ Class for the pawn piece, currently checks for any legal pawn moves
     """
 
-    def __init__(self, x, y):
-        super().__init__(x, y)
+    def __init__(self, x, y, colour):
+        super().__init__(x, y, colour)
         self.directionLock = True
 
     def findLegalMoves(self, gameState):
